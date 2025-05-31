@@ -114,28 +114,22 @@ const server = http.createServer((req, res) =>{
     // delete a todo
      else if (pathname === "/todos/delete-todo" && req.method === "DELETE"){
         const title = url.searchParams.get("title")
-        let data = ""
+        
+        const data = fs.readFileSync(filePath, {encoding: "utf-8"})
+        const todo = JSON.parse(data)
 
-        req.on('data', (chunk) =>{
-            data = data + chunk
-        })
+        const filteredTodo = todo.filter(todo => todo.title !== title)
 
+        if(todo.length === filteredTodo.length){
+            res.writeHead(404, {"content-type": "application/json"})
+            return res.end(JSON.stringify({error: 'todo not found'}))
+        }
 
-        req.on('end', () =>{
-            const { body} = JSON.parse(data)
+        fs.writeFileSync(filePath, JSON.stringify(filteredTodo, null, 2), {encoding: "utf-8"})
 
-            const allTodos = fs.readFileSync(filePath, {encoding: "utf-8"})
-            const parsedAllTodos = JSON.parse(allTodos)
+        res.writeHead(200, {"content-type": "application/json"})
 
-
-            const indexTodo = parsedAllTodos.findIndex((todo) => todo.title === title)
-
-            parsedAllTodos[indexTodo].body = body
-
-            fs.writeFileSync(filePath, JSON.stringify(parsedAllTodos, null, 2), {encoding: "utf-8"})
-
-            res.end(JSON.stringify({title, body, createdAt: parsedAllTodos[indexTodo].createdAt}, null, 2))
-        })
+        res.end(JSON.stringify({message: `todo with title ${title} deleted successfully.`}))
     } 
 
     else{
