@@ -83,6 +83,61 @@ const server = http.createServer((req, res) =>{
         
     }
 
+    // update a todo
+     else if (pathname === "/todos/update-todo" && req.method === "PATCH"){
+        const title = url.searchParams.get("title")
+        let data = ""
+
+        req.on('data', (chunk) =>{
+            data = data + chunk
+        })
+
+
+        req.on('end', () =>{
+            const { body} = JSON.parse(data)
+
+            const allTodos = fs.readFileSync(filePath, {encoding: "utf-8"})
+            const parsedAllTodos = JSON.parse(allTodos)
+
+
+            const indexTodo = parsedAllTodos.findIndex((todo) => todo.title === title)
+
+            parsedAllTodos[indexTodo].body = body
+
+            fs.writeFileSync(filePath, JSON.stringify(parsedAllTodos, null, 2), {encoding: "utf-8"})
+
+            res.end(JSON.stringify({title, body, createdAt: parsedAllTodos[indexTodo].createdAt}, null, 2))
+        })
+    } 
+
+
+    // delete a todo
+     else if (pathname === "/todos/delete-todo" && req.method === "DELETE"){
+        const title = url.searchParams.get("title")
+        let data = ""
+
+        req.on('data', (chunk) =>{
+            data = data + chunk
+        })
+
+
+        req.on('end', () =>{
+            const { body} = JSON.parse(data)
+
+            const allTodos = fs.readFileSync(filePath, {encoding: "utf-8"})
+            const parsedAllTodos = JSON.parse(allTodos)
+
+
+            const indexTodo = parsedAllTodos.findIndex((todo) => todo.title === title)
+
+            parsedAllTodos[indexTodo].body = body
+
+            fs.writeFileSync(filePath, JSON.stringify(parsedAllTodos, null, 2), {encoding: "utf-8"})
+
+            res.end(JSON.stringify({title, body, createdAt: parsedAllTodos[indexTodo].createdAt}, null, 2))
+        })
+    } 
+
     else{
         res.end("route not found")
     }
